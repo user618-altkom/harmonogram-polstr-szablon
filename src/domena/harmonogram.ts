@@ -29,17 +29,23 @@ export interface Rata {
   numer: number;
   data: string;
   kapitalGr: number;
+  nadplataGr: number;
   odsetkiGr: number;
   rataGr: number;
+  rekompensataGr: number;
   saldoPoSplacieGr: number;
 }
 
 export interface Harmonogram {
   raty: Rata[];
   sumaOdsetekGr: number;
+  sumaRekompensatGr: number;
   rataPierwszaGr: number;
   rataOstatniaGr: number;
 }
+
+const MAKSYMALNY_MIESIAC_REKOMPENSATY = 36;
+const MAKSYMALNY_PROCENT_REKOMPENSATY = 0.03;
 
 export function zaokraglijGrosze(wartosc: number): number {
   return Math.round(wartosc);
@@ -93,17 +99,48 @@ function rataRowna(saldoGr: number, stopaMiesieczna: number, liczbaRat: number):
   return zaokraglijGrosze(saldoGr * stopaMiesieczna * wspolczynnik / (wspolczynnik - 1));
 }
 
+export function rekompensataArt40(
+  kwotaGr: number,
+  miesiac: number,
+  stopaRoczna: number,
+): number {
+  if (miesiac < 1 || miesiac > MAKSYMALNY_MIESIAC_REKOMPENSATY) return 0;
+  return zaokraglijGrosze(Math.min(
+    kwotaGr * MAKSYMALNY_PROCENT_REKOMPENSATY,
+    kwotaGr * stopaRoczna,
+  ));
+}
+
 export function policzHarmonogram(
   parametry: ParametryKredytu,
   seria: WpisSerii[],
 ): Harmonogram {
   sprawdzParametry(parametry);
   if (seria.length === 0) throw new Error('seria wskaźnika: nie może być pusta');
+  const nadplaty = parametry.nadplaty ?? [];
+  const nadplatyNaMiesiac = new Map(nadplaty.map((nadplata) => [nadplata.miesiac, nadplata]));
+  if (nadplatyNaMiesiac.size !== nadplaty.length) {
+    throw new Error('nadplaty: jeden miesiąc może mieć tylko jedną nadpłatę');
+  }
+  for (const nadplata of nadplaty) {
+    if (!Number.isInteger(nadplata.miesiac) || nadplata.miesiac < 1 || nadplata.miesiac > parametry.liczbaRat) {
+      throw new Error('nadplata.miesiac: miesiąc w zakresie harmonogramu');
+    }
+    if (!Number.isInteger(nadplata.kwotaGr) || nadplata.kwotaGr <= 0) {
+      throw new Error('nadplata.kwotaGr: dodatnia liczba całkowita groszy');
+    }
+    if (nadplata.tryb !== 'obnizRate' && nadplata.tryb !== 'skrocOkres') {
+      throw new Error('nadplata.tryb: obnizRate albo skrocOkres');
+    }
+  }
 
   let saldoGr = parametry.kwotaGr;
   let sumaOdsetekGr = 0;
+  let sumaRekompensatGr = 0;
   let poprzedniaStopaMiesieczna: number | undefined;
   let aktualnaRataGr: number | undefined;
+  let rataZablokowanaPoSkroceniu = false;
+  let kapitalMalejacyGr: number | undefined;
   const raty: Rata[] = [];
 
   for (let numer = 1; numer <= parametry.liczbaRat; numer += 1) {
@@ -115,25 +152,59 @@ export function policzHarmonogram(
     const odsetkiGr = zaokraglijGrosze(saldoGr * stopaMiesieczna);
     const pozostaleRaty = parametry.liczbaRat - numer + 1;
     if (parametry.typRat === 'rowne'
+      && !rataZablokowanaPoSkroceniu
       && (aktualnaRataGr === undefined || poprzedniaStopaMiesieczna !== stopaMiesieczna)) {
       aktualnaRataGr = rataRowna(saldoGr, stopaMiesieczna, pozostaleRaty);
     }
     poprzedniaStopaMiesieczna = stopaMiesieczna;
+    const planowanyKapitalGr = parametry.typRat === 'malejace' && rataZablokowanaPoSkroceniu
+      ? kapitalMalejacyGr ?? zaokraglijGrosze(saldoGr / pozostaleRaty)
+      : zaokraglijGrosze(saldoGr / pozostaleRaty);
     const planowanaRataGr = parametry.typRat === 'rowne' && aktualnaRataGr !== undefined
       ? aktualnaRataGr
-      : zaokraglijGrosze(saldoGr / pozostaleRaty) + odsetkiGr;
+      : planowanyKapitalGr + odsetkiGr;
     const kapitalGr = numer === parametry.liczbaRat
       ? saldoGr
       : Math.min(saldoGr, Math.max(0, planowanaRataGr - odsetkiGr));
     const rataGr = kapitalGr + odsetkiGr;
     saldoGr -= kapitalGr;
+    const nadplata = nadplatyNaMiesiac.get(numer);
+    if (nadplata !== undefined && nadplata.kwotaGr > saldoGr) {
+      throw new Error('nadplata.kwotaGr: nie może przekraczać salda');
+    }
+    const nadplataGr = nadplata?.kwotaGr ?? 0;
+    const rekompensataGr = nadplata === undefined
+      ? 0
+      : rekompensataArt40(nadplataGr, numer, wpis.stopa + parametry.marza);
+    saldoGr -= nadplataGr;
     sumaOdsetekGr += odsetkiGr;
-    raty.push({ numer, data, kapitalGr, odsetkiGr, rataGr, saldoPoSplacieGr: saldoGr });
+    sumaRekompensatGr += rekompensataGr;
+    raty.push({
+      numer,
+      data,
+      kapitalGr,
+      nadplataGr,
+      odsetkiGr,
+      rataGr,
+      rekompensataGr,
+      saldoPoSplacieGr: saldoGr,
+    });
+    if (nadplata?.tryb === 'obnizRate') {
+      aktualnaRataGr = undefined;
+      rataZablokowanaPoSkroceniu = false;
+      kapitalMalejacyGr = undefined;
+    }
+    if (nadplata?.tryb === 'skrocOkres') {
+      rataZablokowanaPoSkroceniu = true;
+      kapitalMalejacyGr = kapitalGr;
+    }
+    if (saldoGr === 0) break;
   }
 
   return {
     raty,
     sumaOdsetekGr,
+    sumaRekompensatGr,
     rataPierwszaGr: raty[0]?.rataGr ?? 0,
     rataOstatniaGr: raty.at(-1)?.rataGr ?? 0,
   };
