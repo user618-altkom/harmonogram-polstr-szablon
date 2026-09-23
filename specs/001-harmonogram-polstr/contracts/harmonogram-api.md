@@ -27,12 +27,15 @@ groszy przed wywołaniem domeny.
       "numer": 1,
       "data": "2026-10-01",
       "kapitalGr": 123456,
+      "nadplataGr": 0,
       "odsetkiGr": 188667,
       "rataGr": 312123,
+      "rekompensataGr": 0,
       "saldoPoSplacieGr": 39987654
     }
   ],
   "sumaOdsetekGr": 12345678,
+  "sumaRekompensatGr": 0,
   "rataPierwszaGr": 312123,
   "rataOstatniaGr": 312000
 }

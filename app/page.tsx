@@ -21,8 +21,10 @@ export interface Rata {
   nr: number;
   data: string; // YYYY-MM-DD
   kapital: number;
+  nadplata: number;
   odsetki: number;
   rata: number;
+  rekompensata: number;
   saldo: number;
 }
 
@@ -30,6 +32,7 @@ export interface HarmonogramResponse {
   rataPierwszaGr: number;
   rataOstatniaGr: number;
   sumaOdsetekGr: number;
+  sumaRekompensatGr: number;
   raty: Rata[];
 }
 
@@ -37,12 +40,15 @@ interface OdpowiedzApi {
   rataPierwszaGr: number;
   rataOstatniaGr: number;
   sumaOdsetekGr: number;
+  sumaRekompensatGr: number;
   raty: Array<{
     numer: number;
     data: string;
     kapitalGr: number;
+    nadplataGr: number;
     odsetkiGr: number;
     rataGr: number;
+    rekompensataGr: number;
     saldoPoSplacieGr: number;
   }>;
 }
@@ -72,6 +78,7 @@ function jestOdpowiedzApi(dane: unknown): dane is OdpowiedzApi {
   return Number.isInteger(odpowiedz.rataPierwszaGr)
     && Number.isInteger(odpowiedz.rataOstatniaGr)
     && Number.isInteger(odpowiedz.sumaOdsetekGr)
+    && Number.isInteger(odpowiedz.sumaRekompensatGr)
     && Array.isArray(odpowiedz.raty)
     && odpowiedz.raty.every((rata) => {
       if (!rata || typeof rata !== "object") return false;
@@ -79,8 +86,10 @@ function jestOdpowiedzApi(dane: unknown): dane is OdpowiedzApi {
       return Number.isInteger(rekord.numer)
         && typeof rekord.data === "string"
         && Number.isInteger(rekord.kapitalGr)
+        && Number.isInteger(rekord.nadplataGr)
         && Number.isInteger(rekord.odsetkiGr)
         && Number.isInteger(rekord.rataGr)
+        && Number.isInteger(rekord.rekompensataGr)
         && Number.isInteger(rekord.saldoPoSplacieGr);
     });
 }
@@ -223,7 +232,7 @@ export function KalkulatorHarmonogramu({ endpoint = "/api/harmonogram" }: Kalkul
       typRat: form.typRat,
       pierwszaRata: form.pierwszaRata,
     });
-    // Nadpłaty nie są w specyfikacji API – wysyłane tylko gdy są, jako JSON w parametrze "nadplaty".
+    // Nadpłaty są wysyłane jako JSON w parametrze "nadplaty".
     if (form.nadplaty.length) {
       params.set(
         "nadplaty",
@@ -265,12 +274,15 @@ export function KalkulatorHarmonogramu({ endpoint = "/api/harmonogram" }: Kalkul
         rataPierwszaGr: data.rataPierwszaGr,
         rataOstatniaGr: data.rataOstatniaGr,
         sumaOdsetekGr: data.sumaOdsetekGr,
+        sumaRekompensatGr: data.sumaRekompensatGr,
         raty: data.raty.map((rata) => ({
           nr: rata.numer,
           data: rata.data,
           kapital: rata.kapitalGr / 100,
+          nadplata: rata.nadplataGr / 100,
           odsetki: rata.odsetkiGr / 100,
           rata: rata.rataGr / 100,
+          rekompensata: rata.rekompensataGr / 100,
           saldo: rata.saldoPoSplacieGr / 100,
         })),
       });
@@ -290,19 +302,22 @@ export function KalkulatorHarmonogramu({ endpoint = "/api/harmonogram" }: Kalkul
       rataPierwsza: wynik.rataPierwszaGr / 100,
       rataOstatnia: wynik.rataOstatniaGr / 100,
       sumaOdsetek: wynik.sumaOdsetekGr / 100,
+      sumaRekompensat: wynik.sumaRekompensatGr / 100,
       liczbaRat: raty.length,
     };
   }, [wynik]);
 
   function eksportCsv() {
     if (!wynik) return;
-    const naglowek = ["Nr", "Data", "Kapitał", "Odsetki", "Rata", "Saldo"];
+    const naglowek = ["Nr", "Data", "Kapitał", "Nadpłata", "Odsetki", "Rata", "Rekompensata", "Saldo"];
     const wiersze = wynik.raty.map((r): (string | number)[] => [
       r.nr,
       formatData(r.data),
       formatCsvLiczba(r.kapital),
+      formatCsvLiczba(r.nadplata),
       formatCsvLiczba(r.odsetki),
       formatCsvLiczba(r.rata),
+      formatCsvLiczba(r.rekompensata),
       formatCsvLiczba(r.saldo),
     ]);
     const csv = [naglowek, ...wiersze].map((w) => w.join(";")).join("\r\n");
@@ -510,6 +525,7 @@ export function KalkulatorHarmonogramu({ endpoint = "/api/harmonogram" }: Kalkul
               <Kafel etykieta="Pierwsza rata" wartosc={podsumowanie.rataPierwsza} />
               <Kafel etykieta="Ostatnia rata" wartosc={podsumowanie.rataOstatnia} />
               <Kafel etykieta="Suma odsetek" wartosc={podsumowanie.sumaOdsetek} />
+              <Kafel etykieta="Suma rekompensat" wartosc={podsumowanie.sumaRekompensat} />
             </div>
 
             <div className="mt-6 flex items-center justify-between">
@@ -527,7 +543,7 @@ export function KalkulatorHarmonogramu({ endpoint = "/api/harmonogram" }: Kalkul
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-slate-100 text-slate-700">
                   <tr>
-                    {["Nr", "Data", "Kapitał", "Odsetki", "Rata", "Saldo"].map((h, i) => (
+                    {["Nr", "Data", "Kapitał", "Nadpłata", "Odsetki", "Rata", "Rekompensata", "Saldo"].map((h, i) => (
                       <th
                         key={h}
                         scope="col"
@@ -544,8 +560,10 @@ export function KalkulatorHarmonogramu({ endpoint = "/api/harmonogram" }: Kalkul
                       <td className="px-3 py-1.5">{r.nr}</td>
                       <td className="px-3 py-1.5 whitespace-nowrap">{formatData(r.data)}</td>
                       <td className="px-3 py-1.5 text-right whitespace-nowrap">{formatKwota(r.kapital)}</td>
+                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{formatKwota(r.nadplata)}</td>
                       <td className="px-3 py-1.5 text-right whitespace-nowrap">{formatKwota(r.odsetki)}</td>
                       <td className="px-3 py-1.5 text-right whitespace-nowrap font-medium">{formatKwota(r.rata)}</td>
+                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{formatKwota(r.rekompensata)}</td>
                       <td className="px-3 py-1.5 text-right whitespace-nowrap">{formatKwota(r.saldo)}</td>
                     </tr>
                   ))}

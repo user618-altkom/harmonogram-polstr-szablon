@@ -4,6 +4,12 @@ Szablon repozytorium na projekt końcowy szkolenia z AI w cyklu wytwarzania opro
 
 Repozytorium zawiera zainicjalizowany spec-kit dla Copilota (skrypty PowerShell), szkielet Next.js (App Router, TypeScript, Tailwind) z pustym modułem domenowym i testami vitest, dane przykładowe wskaźników, workflow GitHub Actions, reguły review dla Copilota i skrypty rutyny review przez Copilot CLI. Nie zawiera implementacji, ta powstaje w trakcie dnia.
 
+Rekompensata za nadpłatę jest liczona wyłącznie dla zmiennej stopy i miesięcy 1–36
+umowy. Kredyty o okresowo stałej stopie, objęte innymi ograniczeniami art. 40 ust. 5,
+są poza zakresem tej wersji. Nadpłata jest księgowana po racie danego miesiąca,
+a odsetki za tę ratę są liczone od salda sprzed nadpłaty; rekompensata jest osobną
+opłatą i nie pomniejsza salda.
+
 Dokumenty do przeczytania na start:
 
 - [BRIEF.md](BRIEF.md), zgłoszenie z biznesu i zakres MVP

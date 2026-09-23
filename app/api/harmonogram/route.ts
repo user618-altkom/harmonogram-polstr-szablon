@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { policzHarmonogram, type ParametryKredytu } from '../../../src/domena/harmonogram';
+import {
+  policzHarmonogram,
+  type Nadplata,
+  type ParametryKredytu,
+} from '../../../src/domena/harmonogram';
 import { seriaWskaznika } from '../../../src/dane/wskazniki';
 
 // Route handler jest cienki: parsuje parametry z query string, woła domenę, zwraca JSON.
@@ -16,6 +20,7 @@ function parsujParametry(szukane: URLSearchParams): ParametryKredytu | string {
   const wskaznik = szukane.get('wskaznik');
   const typRat = szukane.get('typRat');
   const pierwszaRata = szukane.get('pierwszaRata') ?? '';
+  const nadplatyTekst = szukane.get('nadplaty');
 
   if (!Number.isFinite(kwota) || kwota <= 0 || !Number.isInteger(Math.round(kwota * 100))) return 'kwota: liczba dodatnia w złotych, np. 400000';
   if (!Number.isInteger(liczbaRat) || liczbaRat <= 0) return 'liczbaRat: liczba całkowita dodatnia, np. 300';
@@ -24,6 +29,31 @@ function parsujParametry(szukane: URLSearchParams): ParametryKredytu | string {
   if (typRat !== 'rowne' && typRat !== 'malejace') return 'typRat: rowne albo malejace';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(pierwszaRata)) return 'pierwszaRata: data YYYY-MM-DD';
 
+  let nadplaty = undefined;
+  if (nadplatyTekst !== null) {
+    try {
+      const wartosc: unknown = JSON.parse(nadplatyTekst);
+      if (!Array.isArray(wartosc)) return 'nadplaty: tablica obiektów';
+      nadplaty = wartosc.map((nadplata): Nadplata => {
+        if (!nadplata || typeof nadplata !== 'object') throw new Error('nadplaty: nieprawidłowy wpis');
+        const rekord = nadplata as Record<string, unknown>;
+        const kwotaNadplaty = Number(rekord.kwota);
+        if (!Number.isFinite(kwotaNadplaty)) throw new Error('nadplaty.kwota: liczba w złotych');
+        const tryb = rekord.tryb;
+        if (tryb !== 'obnizRate' && tryb !== 'skrocOkres') {
+          throw new Error('nadplaty.tryb: obnizRate albo skrocOkres');
+        }
+        return {
+          miesiac: Number(rekord.miesiac),
+          kwotaGr: Math.round(kwotaNadplaty * 100),
+          tryb,
+        };
+      });
+    } catch (blad) {
+      return blad instanceof Error ? blad.message : 'nadplaty: nieprawidłowy JSON';
+    }
+  }
+
   return {
     kwotaGr: Math.round(kwota * 100),
     liczbaRat,
@@ -31,6 +61,7 @@ function parsujParametry(szukane: URLSearchParams): ParametryKredytu | string {
     wskaznik,
     typRat,
     pierwszaRata,
+    nadplaty,
   };
 }
 
