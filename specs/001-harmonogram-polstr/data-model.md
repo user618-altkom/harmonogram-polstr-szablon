@@ -60,8 +60,8 @@ Wynik obliczenia zawierający:
 
 - `raty`: uporządkowaną listę Rata,
 - `sumaOdsetekGr`: sumę wszystkich `odsetkiGr`,
-- opcjonalnie `rataPierwszaGr` i `rataOstatniaGr` jako wygodne agregaty dla
-  ekranu.
+- `rataPierwszaGr` i `rataOstatniaGr` jako wymagane agregaty dla
+  ekranu i kontraktu API.
 
 Relacje: jeden Harmonogram ma wiele Rat; jedna ParametryKredytu wybiera jedną
 Serię wskaźnika i może zawierać wiele Nadplat.
