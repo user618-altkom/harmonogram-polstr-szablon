@@ -1,9 +1,9 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 1.0.1
+- Version change: 1.0.0 → 1.1.0
 - Modified principles: none
-- Added sections: none
-- Removed sections: none
+- Added sections: I–V, Ograniczenia techniczne i domenowe, Proces wytwarzania i jakość
+- Removed sections: placeholder sections from the template
 - Follow-up TODOs: none
 -->
 
