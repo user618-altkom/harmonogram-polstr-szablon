@@ -44,6 +44,9 @@ export interface Harmonogram {
   rataOstatniaGr: number;
 }
 
+const MAKSYMALNY_MIESIAC_REKOMPENSATY = 36;
+const MAKSYMALNY_PROCENT_REKOMPENSATY = 0.03;
+
 export function zaokraglijGrosze(wartosc: number): number {
   return Math.round(wartosc);
 }
@@ -101,8 +104,11 @@ export function rekompensataArt40(
   miesiac: number,
   stopaRoczna: number,
 ): number {
-  if (miesiac < 1 || miesiac > 36) return 0;
-  return zaokraglijGrosze(Math.min(kwotaGr * 0.03, kwotaGr * stopaRoczna));
+  if (miesiac < 1 || miesiac > MAKSYMALNY_MIESIAC_REKOMPENSATY) return 0;
+  return zaokraglijGrosze(Math.min(
+    kwotaGr * MAKSYMALNY_PROCENT_REKOMPENSATY,
+    kwotaGr * stopaRoczna,
+  ));
 }
 
 export function policzHarmonogram(
