@@ -34,7 +34,7 @@ przed zakończeniem tej fazy.
 - [ ] T001 Zdefiniować typy `Nadplata`, `Rata` i `Harmonogram` oraz rozszerzyć `ParametryKredytu` o opcjonalną listę nadpłat w `src/domena/harmonogram.ts`, zachowując kwoty jako całkowite grosze, `typRat` jako `rowne | malejace`, `wskaznik` jako `POLSTR_1M | WIBOR_3M`, a `tryb` jako `obnizRate | skrocOkres`
 - [ ] T002 Dodać współdzielone walidatory rzeczywistej daty `YYYY-MM-DD`, dodatnich liczb całkowitych i nieujemnej marży w `src/domena/harmonogram.ts`
 - [ ] T003 Ustalić funkcję wyboru wartości serii wskaźnika dla daty raty w `src/dane/wskazniki.ts`, z pierwszym wpisem dla dat wcześniejszych i ostatnim znanym wpisem dla dat późniejszych
-- [ ] T004 Przygotować wspólne narzędzia dat miesięcznych i centralnego zaokrąglania do grosza w `src/domena/harmonogram.ts`, bez `Date.now()`, I/O i logowania
+- [ ] T004 Przygotować wspólne narzędzia dat miesięcznych, z jawną regułą dla dnia nieistniejącego w krótszym miesiącu (np. 31 stycznia → ostatni dzień lutego), oraz centralnego zaokrąglania do grosza w `src/domena/harmonogram.ts`, bez `Date.now()`, I/O i logowania
 
 **Checkpoint**: Wspólne typy, walidacja, wybór wskaźnika i reguły pieniędzy są
 gotowe; historie mogą być implementowane niezależnie.
