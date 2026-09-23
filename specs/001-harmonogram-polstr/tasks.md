@@ -31,10 +31,10 @@ użytkownika.
 **⚠️ CRITICAL**: Żadna historia użytkownika nie może rozpocząć implementacji
 przed zakończeniem tej fazy.
 
-- [ ] T001 Zdefiniować typy `Nadplata`, `Rata` i `Harmonogram` oraz rozszerzyć `ParametryKredytu` o opcjonalną listę nadpłat w `src/domena/harmonogram.ts`, zachowując kwoty jako całkowite grosze, `typRat` jako `rowne | malejace`, `wskaznik` jako `POLSTR_1M | WIBOR_3M`, a `tryb` jako `obnizRate | skrocOkres`
-- [ ] T002 Dodać współdzielone walidatory rzeczywistej daty `YYYY-MM-DD`, dodatnich liczb całkowitych i nieujemnej marży w `src/domena/harmonogram.ts`
-- [ ] T003 Ustalić funkcję wyboru wartości serii wskaźnika dla daty raty w `src/dane/wskazniki.ts`, z pierwszym wpisem dla dat wcześniejszych i ostatnim znanym wpisem dla dat późniejszych
-- [ ] T004 Przygotować wspólne narzędzia dat miesięcznych, z jawną regułą dla dnia nieistniejącego w krótszym miesiącu (np. 31 stycznia → ostatni dzień lutego), oraz centralnego zaokrąglania do grosza w `src/domena/harmonogram.ts`, bez `Date.now()`, I/O i logowania
+- [X] T001 Zdefiniować typy `Nadplata`, `Rata` i `Harmonogram` oraz rozszerzyć `ParametryKredytu` o opcjonalną listę nadpłat w `src/domena/harmonogram.ts`, zachowując kwoty jako całkowite grosze, `typRat` jako `rowne | malejace`, `wskaznik` jako `POLSTR_1M | WIBOR_3M`, a `tryb` jako `obnizRate | skrocOkres`
+- [X] T002 Dodać współdzielone walidatory rzeczywistej daty `YYYY-MM-DD`, dodatnich liczb całkowitych i nieujemnej marży w `src/domena/harmonogram.ts`
+- [X] T003 Ustalić funkcję wyboru wartości serii wskaźnika dla daty raty w `src/dane/wskazniki.ts`, z pierwszym wpisem dla dat wcześniejszych i ostatnim znanym wpisem dla dat późniejszych
+- [X] T004 Przygotować wspólne narzędzia dat miesięcznych, z jawną regułą dla dnia nieistniejącego w krótszym miesiącu (np. 31 stycznia → ostatni dzień lutego), oraz centralnego zaokrąglania do grosza w `src/domena/harmonogram.ts`, bez `Date.now()`, I/O i logowania
 
 **Checkpoint**: Wspólne typy, walidacja, wybór wskaźnika i reguły pieniędzy są
 gotowe; historie mogą być implementowane niezależnie.
@@ -52,17 +52,17 @@ pp potwierdza pierwszą ratę 2 494,72 zł, ostatnią 2 492,53 zł z tolerancją
 
 ### Tests for User Story 1
 
-- [ ] T005 [US1] Napisać test liczby kontrolnej rat równych ze stałą serią `0.0355` w `tests/harmonogram.test.ts`, oczekując pierwszej raty `249472` groszy, ostatniej `249253` grosze z tolerancją 5 groszy i sumy kapitału `40000000` groszy
-- [ ] T006 [US1] Napisać test walidacji parametrów i rzeczywistej daty `2026-02-31` w `tests/harmonogram.test.ts`, oczekując jawnego błędu zamiast częściowego wyniku
-- [ ] T007 [P] [US1] Napisać test odpowiedzi endpointu dla poprawnych parametrów i brakującego `wskaznik` w `tests/harmonogram-api.test.ts`, oczekując odpowiednio statusu 200 z polami `raty`, `sumaOdsetekGr`, `rataPierwszaGr`, `rataOstatniaGr` oraz statusu 400 z polem `blad`
+- [X] T005 [US1] Napisać test liczby kontrolnej rat równych ze stałą serią `0.0355` w `tests/harmonogram.test.ts`, oczekując pierwszej raty `249472` groszy, ostatniej `249253` grosze z tolerancją 5 groszy i sumy kapitału `40000000` groszy
+- [X] T006 [US1] Napisać test walidacji parametrów i rzeczywistej daty `2026-02-31` w `tests/harmonogram.test.ts`, oczekując jawnego błędu zamiast częściowego wyniku
+- [X] T007 [P] [US1] Napisać test odpowiedzi endpointu dla poprawnych parametrów i brakującego `wskaznik` w `tests/harmonogram-api.test.ts`, oczekując odpowiednio statusu 200 z polami `raty`, `sumaOdsetekGr`, `rataPierwszaGr`, `rataOstatniaGr` oraz statusu 400 z polem `blad`
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Zaimplementować czystą funkcję wyliczającą oprocentowanie okresu jako wskaźnik plus marża i odsetki proste od salda w `src/domena/harmonogram.ts`
-- [ ] T009 [US1] Zaimplementować ratę równą przeliczaną dla bieżącego salda i liczby pozostałych rat oraz korektę ostatniej raty w `src/domena/harmonogram.ts`
-- [ ] T010 [US1] Zaimplementować generowanie dat rat i pojedynczych rekordów `Rata` w `src/domena/harmonogram.ts`, bez obliczeń finansowych w route handlerze
-- [ ] T011 [US1] Zaktualizować `app/api/harmonogram/route.ts` tak, aby parsował kwoty do groszy bez wykonywania zaokrągleń finansowych w route, konwertował punkty procentowe na ułamki, walidował datę oraz zwracał kontrakt 200/400 opisany w `contracts/harmonogram-api.md`
-- [ ] T012 [US1] Zaktualizować `tests/smoke.test.ts` tak, aby zastąpić oczekiwanie błędu „nie zaimplementowano” testem działającego harmonogramu i zachować test uporządkowania serii danych
+- [X] T008 [US1] Zaimplementować czystą funkcję wyliczającą oprocentowanie okresu jako wskaźnik plus marża i odsetki proste od salda w `src/domena/harmonogram.ts`
+- [X] T009 [US1] Zaimplementować ratę równą przeliczaną dla bieżącego salda i liczby pozostałych rat oraz korektę ostatniej raty w `src/domena/harmonogram.ts`
+- [X] T010 [US1] Zaimplementować generowanie dat rat i pojedynczych rekordów `Rata` w `src/domena/harmonogram.ts`, bez obliczeń finansowych w route handlerze
+- [X] T011 [US1] Zaktualizować `app/api/harmonogram/route.ts` tak, aby parsował kwoty do groszy bez wykonywania zaokrągleń finansowych w route, konwertował punkty procentowe na ułamki, walidował datę oraz zwracał kontrakt 200/400 opisany w `contracts/harmonogram-api.md`
+- [X] T012 [US1] Zaktualizować `tests/smoke.test.ts` tak, aby zastąpić oczekiwanie błędu „nie zaimplementowano” testem działającego harmonogramu i zachować test uporządkowania serii danych
 
 **Checkpoint**: Historia P1 działa samodzielnie przez domenę i
 `GET /api/harmonogram`; MVP można zweryfikować bez interfejsu graficznego.

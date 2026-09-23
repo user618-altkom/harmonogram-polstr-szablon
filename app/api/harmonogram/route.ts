@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { policzHarmonogram, type ParametryKredytu } from '../../../src/domena/harmonogram';
+import { seriaWskaznika } from '../../../src/dane/wskazniki';
 
 // Route handler jest cienki: parsuje parametry z query string, woła domenę, zwraca JSON.
 // Żadnych obliczeń finansowych w tym pliku. Przeliczenie jednostek wejścia
@@ -16,7 +17,7 @@ function parsujParametry(szukane: URLSearchParams): ParametryKredytu | string {
   const typRat = szukane.get('typRat');
   const pierwszaRata = szukane.get('pierwszaRata') ?? '';
 
-  if (!Number.isFinite(kwota) || kwota <= 0) return 'kwota: liczba dodatnia w złotych, np. 400000';
+  if (!Number.isFinite(kwota) || kwota <= 0 || !Number.isInteger(Math.round(kwota * 100))) return 'kwota: liczba dodatnia w złotych, np. 400000';
   if (!Number.isInteger(liczbaRat) || liczbaRat <= 0) return 'liczbaRat: liczba całkowita dodatnia, np. 300';
   if (!Number.isFinite(marza) || marza < 0) return 'marza: punkty procentowe, np. 2.11';
   if (wskaznik !== 'POLSTR_1M' && wskaznik !== 'WIBOR_3M') return 'wskaznik: POLSTR_1M albo WIBOR_3M';
@@ -40,13 +41,10 @@ export function GET(request: Request) {
   }
 
   try {
-    const harmonogram = policzHarmonogram(parametry);
+    const harmonogram = policzHarmonogram(parametry, seriaWskaznika(parametry.wskaznik));
     return NextResponse.json(harmonogram);
   } catch (blad) {
     const komunikat = blad instanceof Error ? blad.message : String(blad);
-    if (komunikat.startsWith('nie zaimplementowano')) {
-      return NextResponse.json({ blad: komunikat, parametry, przyklad: PRZYKLAD }, { status: 501 });
-    }
     return NextResponse.json({ blad: komunikat }, { status: 400 });
   }
 }
