@@ -1,50 +1,89 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: 1.0.0 → 1.0.1
+- Modified principles: none
+- Added sections: none
+- Removed sections: none
+- Follow-up TODOs: none
+-->
+
+# Harmonogram POLSTR Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Czysta domena obliczeń
+Cała logika harmonogramu spłat MUST znajdować się w czystych funkcjach
+TypeScript w `src/domena/`. Moduły domenowe MUST NOT używać Reacta, I/O,
+odczytu plików, `Date.now()` ani logowania. Route handler MUST wyłącznie
+parsować parametry żądania, wywoływać domenę i zwracać JSON; nie może zawierać
+obliczeń, zaokrągleń ani pętli po ratach. Rozdział ten chroni testowalność i
+zapobiega duplikowaniu reguł biznesowych w warstwach aplikacji.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. TypeScript strict i nazwy domenowe po polsku
+Projekt MUST używać TypeScript z włączonym trybem strict i nie może zawierać
+`any`, `@ts-ignore` ani nieuzasadnionych rzutowań omijających typy. Nazwy
+pojęć domenowych MUST być pełne i po polsku, bez skrótów. Dokumenty, komentarze
+w kodzie i komunikaty commitów MUST być pisane po polsku. Zasada zapewnia
+czytelny kontrakt kodu dla domeny kredytowej i ogranicza błędy wynikające z
+niejawnego typowania.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Test-first i liczby kontrolne
+Każda zmiana logiki obliczeń MUST być poprzedzona testem w Vitest, który
+obejmuje konkretną liczbę kontrolną. Testy domeny i danych MUST znajdować się
+w `tests/`. Minimalny zakres obejmuje raty równe, raty malejące, zmianę
+wskaźnika, oba tryby nadpłaty oraz zgodność sumy kapitału z kwotą kredytu.
+Cykl MUST przebiegać jako test, implementacja, refaktoryzacja. Dzięki temu
+reguły finansowe są weryfikowane przed integracją z interfejsem.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Jednoznaczne pieniądze i wskaźniki
+Kwoty MUST być reprezentowane w groszach jako liczby całkowite albo przez
+jedną wyraźnie udokumentowaną decyzję o miejscu zaokrąglania. Zaokrąglanie do
+grosza MUST odbywać się w jednym miejscu, a rata końcowa MUST wyrównywać sumę
+części kapitałowych do kwoty kredytu. Serie POLSTR 1M i WIBOR 3M MUST być
+wczytywane z `dane/*.json` przez `src/dane/`; po ostatnim wpisie obowiązuje
+ostatnia znana wartość. Reguły te zapewniają powtarzalność wyników i
+eliminują rozbieżności groszowe.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Prosty, jawny i etapowy rozwój
+MVP MUST pozostać ograniczone do wymagań opisanych w `BRIEF.md`; nowe
+zależności wymagają uzasadnienia w zmianie i akceptacji przed dodaniem.
+Implementacja MUST przebiegać fazami opisanymi w `tasks.md`, z osobnym PR-em
+na fazę, review przed kolejną fazą i zatrzymaniem po zakończeniu wskazanej
+fazy. Ekran MUST być komponentem `'use client'` w `app/page.tsx`, używać
+Tailwind bez biblioteki UI i pobierać dane przez `/api/harmonogram`.
+Ograniczenie zakresu chroni termin MVP i ułatwia niezależne sprawdzanie
+logiki oraz interfejsu.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Ograniczenia techniczne i domenowe
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+Projekt MUST używać Next.js App Router, TypeScript, Tailwind i Vitest.
+Wskaźnik okresu jest sumą wartości wskaźnika i marży; POLSTR 1M zmienia się
+co miesiąc, a WIBOR 3M co kwartał. Odsetki są proste w okresie, bez
+kapitalizacji w ramach miesiąca. API `GET /api/harmonogram` zwraca tabelę rat
+oraz sumę odsetek, a eksport CSV działa po stronie przeglądarki. Wdrożenie
+produkcyjne MUST budować się przez `next build` na Vercel po zmianach w
+gałęzi `main`.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Proces wytwarzania i jakość
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Przed zgłoszeniem gotowości MUST przejść `npm test`, `npm run typecheck` oraz
+`npm run build`. Każda zmiana MUST zachować istniejące testy i konwencje,
+a review kodu TypeScript MUST klasyfikować uwagi jako BŁĄD, RYZYKO albo STYL
+i wskazywać plik oraz linię. Granice okresów, dat i ostatniej raty MUST mieć
+jawne testy brzegowe. PR-y powinny być małe, opisowe i możliwe do niezależnego
+zreviewowania; PR-y MUST być małe i opisowe, a komunikat commita MUST być
+jednolinijkowy i opisowy.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Konstytucja jest nadrzędna wobec lokalnych praktyk implementacyjnych.
+Każda zmiana zasad wymaga aktualizacji tego pliku, raportu wpływu w komentarzu
+HTML, podniesienia wersji zgodnie z SemVer oraz review w osobnym PR. Wersja
+MAJOR oznacza usunięcie lub zmianę wstecznie niezgodnej zasady, MINOR dodanie
+zasady lub istotne rozszerzenie zakresu, a PATCH doprecyzowanie bez zmiany
+znaczenia. Zgodność z konstytucją MUST być sprawdzana podczas planowania,
+implementacji i review; odstępstwa wymagają uzasadnienia w PR. Artefakty
+spec-kit (`spec.md`, `plan.md`, `tasks.md`) są źródłem kolejności prac, ale
+nie mogą naruszać tych zasad.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.1 | **Ratified**: 2026-09-23 | **Last Amended**: 2026-09-23
