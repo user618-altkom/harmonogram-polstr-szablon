@@ -61,7 +61,7 @@ pp potwierdza pierwszą ratę 2 494,72 zł, ostatnią 2 492,53 zł z tolerancją
 - [ ] T008 [US1] Zaimplementować czystą funkcję wyliczającą oprocentowanie okresu jako wskaźnik plus marża i odsetki proste od salda w `src/domena/harmonogram.ts`
 - [ ] T009 [US1] Zaimplementować ratę równą przeliczaną dla bieżącego salda i liczby pozostałych rat oraz korektę ostatniej raty w `src/domena/harmonogram.ts`
 - [ ] T010 [US1] Zaimplementować generowanie dat rat i pojedynczych rekordów `Rata` w `src/domena/harmonogram.ts`, bez obliczeń finansowych w route handlerze
-- [ ] T011 [US1] Zaktualizować `app/api/harmonogram/route.ts` tak, aby parsował złote na grosze i punkty procentowe na ułamek, walidował datę oraz zwracał kontrakt 200/400 opisany w `contracts/harmonogram-api.md`
+- [ ] T011 [US1] Zaktualizować `app/api/harmonogram/route.ts` tak, aby parsował kwoty do groszy bez wykonywania zaokrągleń finansowych w route, konwertował punkty procentowe na ułamki, walidował datę oraz zwracał kontrakt 200/400 opisany w `contracts/harmonogram-api.md`
 - [ ] T012 [US1] Zaktualizować `tests/smoke.test.ts` tak, aby zastąpić oczekiwanie błędu „nie zaimplementowano” testem działającego harmonogramu i zachować test uporządkowania serii danych
 
 **Checkpoint**: Historia P1 działa samodzielnie przez domenę i
