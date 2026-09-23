@@ -139,6 +139,8 @@ export function policzHarmonogram(
   let sumaRekompensatGr = 0;
   let poprzedniaStopaMiesieczna: number | undefined;
   let aktualnaRataGr: number | undefined;
+  let rataZablokowanaPoSkroceniu = false;
+  let kapitalMalejacyGr: number | undefined;
   const raty: Rata[] = [];
 
   for (let numer = 1; numer <= parametry.liczbaRat; numer += 1) {
@@ -150,13 +152,17 @@ export function policzHarmonogram(
     const odsetkiGr = zaokraglijGrosze(saldoGr * stopaMiesieczna);
     const pozostaleRaty = parametry.liczbaRat - numer + 1;
     if (parametry.typRat === 'rowne'
+      && !rataZablokowanaPoSkroceniu
       && (aktualnaRataGr === undefined || poprzedniaStopaMiesieczna !== stopaMiesieczna)) {
       aktualnaRataGr = rataRowna(saldoGr, stopaMiesieczna, pozostaleRaty);
     }
     poprzedniaStopaMiesieczna = stopaMiesieczna;
+    const planowanyKapitalGr = parametry.typRat === 'malejace' && rataZablokowanaPoSkroceniu
+      ? kapitalMalejacyGr ?? zaokraglijGrosze(saldoGr / pozostaleRaty)
+      : zaokraglijGrosze(saldoGr / pozostaleRaty);
     const planowanaRataGr = parametry.typRat === 'rowne' && aktualnaRataGr !== undefined
       ? aktualnaRataGr
-      : zaokraglijGrosze(saldoGr / pozostaleRaty) + odsetkiGr;
+      : planowanyKapitalGr + odsetkiGr;
     const kapitalGr = numer === parametry.liczbaRat
       ? saldoGr
       : Math.min(saldoGr, Math.max(0, planowanaRataGr - odsetkiGr));
@@ -183,7 +189,15 @@ export function policzHarmonogram(
       rekompensataGr,
       saldoPoSplacieGr: saldoGr,
     });
-    if (nadplata?.tryb === 'obnizRate') aktualnaRataGr = undefined;
+    if (nadplata?.tryb === 'obnizRate') {
+      aktualnaRataGr = undefined;
+      rataZablokowanaPoSkroceniu = false;
+      kapitalMalejacyGr = undefined;
+    }
+    if (nadplata?.tryb === 'skrocOkres') {
+      rataZablokowanaPoSkroceniu = true;
+      kapitalMalejacyGr = kapitalGr;
+    }
     if (saldoGr === 0) break;
   }
 

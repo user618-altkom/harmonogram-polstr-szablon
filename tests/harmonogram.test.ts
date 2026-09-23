@@ -69,4 +69,28 @@ describe('rekompensataArt40', () => {
     expect(zRekompensata.sumaRekompensatGr).toBe(150_000);
     expect(zRekompensata.raty[12]?.saldoPoSplacieGr).toBe(24_193_395);
   });
+
+  it('rozróżnia skrócenie okresu i obniżenie raty po nadpłacie', () => {
+    const wspólne: ParametryKredytu = {
+      kwotaGr: 30_000_000,
+      liczbaRat: 240,
+      marza: 0.0211,
+      typRat: 'rowne',
+      wskaznik: 'WIBOR_3M',
+      pierwszaRata: '2027-10-01',
+    };
+    const seria = [{ od: '2027-10-01', stopa: 0.0455 }];
+    const obnizRate = policzHarmonogram({
+      ...wspólne,
+      nadplaty: [{ miesiac: 1, kwotaGr: 3_000_000, tryb: 'obnizRate' }],
+    }, seria);
+    const skrocOkres = policzHarmonogram({
+      ...wspólne,
+      nadplaty: [{ miesiac: 1, kwotaGr: 3_000_000, tryb: 'skrocOkres' }],
+    }, seria);
+
+    expect(obnizRate.raty).toHaveLength(240);
+    expect(skrocOkres.raty.length).toBeLessThan(obnizRate.raty.length);
+    expect(skrocOkres.raty[1]?.rataGr).toBe(skrocOkres.raty[0]?.rataGr);
+  });
 });
