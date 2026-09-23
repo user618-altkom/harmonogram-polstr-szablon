@@ -85,7 +85,7 @@ sprawdza saldo i długość harmonogramu, a następnie eksportuje tabelę.
 
 ### Edge Cases
 
-- Kwota kredytu, liczba rat i marża muszą być dodatnie; brakujące albo
+- Kwota kredytu i liczba rat muszą być dodatnie, a marża nieujemna; brakujące albo
   niepoprawne dane uniemożliwiają obliczenie i pokazują zrozumiały komunikat.
 - Data pierwszej raty musi mieć format `YYYY-MM-DD`; niepoprawna data jest
   odrzucana.
